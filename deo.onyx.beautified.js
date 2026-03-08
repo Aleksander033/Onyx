@@ -4965,7 +4965,7 @@ var _0x33c02e = _0x400f;
                                 else {
                                     if (_0x225b15[_0x749c0f(0x3ae)]) {
                                         if (_0x749c0f(0x608) === _0x32223c[_0x749c0f(0x80f)]) return _0x5ee413[_0x749c0f(0x34a)](_0x749c0f(0x290), _0x749c0f(0x539));
-                                        this[_0x749c0f(0x45d)] = _0x226e76()['create']('wss://' + _0x14454b + _0x749c0f(0x386), (() => {
+                                        this[_0x749c0f(0x45d)] = _0x7601c3()['create']('wss://' + _0x14454b + _0x749c0f(0x386), (() => {
                                             var _0xdc726b = _0x749c0f;
                                             window['Tab2WS'] = this[_0xdc726b(0x45d)], window[_0xdc726b(0x45d)] = this[_0xdc726b(0x5b2)](0x2), window[_0xdc726b(0x45d)];
                                         })[_0x749c0f(0x8f4)](this), (() => {
@@ -10814,3 +10814,4 @@ function _0x3b02() {
     };
     return _0x3b02();
 }
+
