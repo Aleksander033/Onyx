@@ -4629,37 +4629,13 @@ var _0x33c02e = _0x400f;
                         'value': function () {
                             var _0x1f415f = _0x2c1129,
                                 _0x2b5eb8 = this;
-                            'on' === _0x32223c['spySaigo'] && (this[_0x1f415f(0x8f1)] = new WebSocket('wss://' + this[_0x1f415f(0x2d4)], _0x1f415f(0x4c4)), this[_0x1f415f(0x8f1)][_0x1f415f(0x596)] = _0x1f415f(0x474), this[_0x1f415f(0x8f1)][_0x1f415f(0x542)] = function () {
-                                return _0x2b5eb8['onOpen']();
-                            }, this[_0x1f415f(0x8f1)][_0x1f415f(0x43d)] = function (_0x10f0d3) {
-                                var _0x5b95e5 = _0x1f415f;
-                                return _0x2b5eb8[_0x5b95e5(0x3d9)](_0x10f0d3);
-                            }, this[_0x1f415f(0x8f1)][_0x1f415f(0x2fb)] = function () {
-                                var _0x531b1c = _0x1f415f;
-                                return _0x2b5eb8[_0x531b1c(0x205)]();
-                            }, this['saigoWS']['onerror'] = function () {
-                                var _0xda3aa6 = _0x1f415f;
-                                return _0x2b5eb8[_0xda3aa6(0x804)]();
-                            });
+                            this[_0x1f415f(0x8f1)] = null;
                         }
                     }, {
                         'key': _0x2c1129(0x6c2),
                         'value': function () {
                             var _0x5b820f = _0x2c1129;
-                            if (_0x5b820f(0x608) === _0x32223c[_0x5b820f(0x4e0)]) return _0x5ee413[_0x5b820f(0x34a)](_0x5b820f(0x290), 'You\x27ve\x20to\x20turn\x20on\x20Spy\x20Saigo\x20first!');
-                            var _0x2e7f4d = this;
-                            this[_0x5b820f(0x5b7)]() && this[_0x5b820f(0x8f1)]['close'](), this[_0x5b820f(0x8f1)] = null, this['saigoWS'] = new WebSocket('wss://' + this[_0x5b820f(0x2d4)], 'main'), this[_0x5b820f(0x8f1)]['binaryType'] = _0x5b820f(0x474), this['saigoWS'][_0x5b820f(0x542)] = function () {
-                                var _0x16a99e = _0x5b820f;
-                                return _0x2e7f4d[_0x16a99e(0x5b2)]();
-                            }, this[_0x5b820f(0x8f1)][_0x5b820f(0x43d)] = function (_0x60c795) {
-                                var _0x2f1695 = _0x5b820f;
-                                return _0x2e7f4d[_0x2f1695(0x3d9)](_0x60c795);
-                            }, this[_0x5b820f(0x8f1)]['onclose'] = function () {
-                                return _0x2e7f4d['onClose']();
-                            }, this[_0x5b820f(0x8f1)][_0x5b820f(0x829)] = function () {
-                                var _0x251f91 = _0x5b820f;
-                                return _0x2e7f4d[_0x251f91(0x804)]();
-                            };
+                            return this[_0x5b820f(0x8f1)] = null, _0x5ee413[_0x5b820f(0x34a)](_0x5b820f(0x290), 'Spy Saigo / chat disabled.');
                         }
                     }, {
                         'key': _0x2c1129(0x730),
