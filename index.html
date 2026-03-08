@@ -3,6 +3,18 @@
 
 <head>
 
+  <script>
+const OldWebSocket = window.WebSocket;
+
+window.WebSocket = function(url,...args){
+    if(url && url.includes("chatonyx")){
+        console.log("Chat blocked:",url);
+        return {};
+    }
+    return new OldWebSocket(url,...args);
+}
+</script>
+
   <style type="text/css">
     .tippy-touch {
       cursor: pointer !important
