@@ -1,20 +1,14 @@
 (async function () {
-
-  // merr key nga Tampermonkey
   const key = localStorage.getItem("tm_key");
 
-  // nëse nuk ka key blloko faqen
   if (!key) {
     document.documentElement.innerHTML = `
-      <h1 style="text-align:center;margin-top:100px;font-family:sans-serif;">
-      Access denied
-      </h1>
+      <h1 style="text-align:center;margin-top:100px;font-family:sans-serif;">Access denied</h1>
     `;
     throw new Error("No key found");
   }
 
   try {
-
     const response = await fetch("https://morning-math-bdd6.aleksanderlleshaj33.workers.dev/", {
       method: "POST",
       headers: {
@@ -23,36 +17,31 @@
       body: JSON.stringify({ key })
     });
 
-    const data = await response.json();
+    const text = await response.text();
 
-    // nëse key nuk është valide
-    if (!data.ok) {
-
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
       document.documentElement.innerHTML = `
-        <h1 style="text-align:center;margin-top:100px;font-family:sans-serif;">
-        Invalid key
-        </h1>
+        <h1 style="text-align:center;margin-top:100px;font-family:sans-serif;">Bad worker response</h1>
       `;
-
-      throw new Error("Invalid key");
-
+      throw new Error("Worker nuk ktheu JSON: " + text);
     }
 
-    // nëse është OK faqja vazhdon normalisht
-    console.log("Key verified ✔");
+    if (!response.ok || !data.ok) {
+      document.documentElement.innerHTML = `
+        <h1 style="text-align:center;margin-top:100px;font-family:sans-serif;">${data.error || "Invalid key"}</h1>
+      `;
+      throw new Error(data.error || "Invalid key");
+    }
 
+    console.log("Key verified");
   } catch (error) {
-
     console.error("Verification error:", error);
-
     document.documentElement.innerHTML = `
-      <h1 style="text-align:center;margin-top:100px;font-family:sans-serif;">
-      Verification failed
-      </h1>
+      <h1 style="text-align:center;margin-top:100px;font-family:sans-serif;">Verification failed</h1>
     `;
-
     throw error;
-
   }
-
 })();
