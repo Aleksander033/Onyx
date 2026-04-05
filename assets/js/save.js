@@ -7,8 +7,9 @@
 
     let recorder = null;
     let chunks = [];
-    let isReady = false;
     let statusBox = null;
+    let previewVideo = null;
+    let selectedCanvas = null;
 
     function log(msg) {
         console.log('[REPLAY]', msg);
@@ -16,67 +17,93 @@
     }
 
     function createUI() {
-        if (document.getElementById('saveReplayBtn')) return;
+        if (!document.getElementById('saveReplayBtn')) {
+            const btn = document.createElement('button');
+            btn.id = 'saveReplayBtn';
+            btn.textContent = 'Save Replay';
+            Object.assign(btn.style, {
+                position: 'fixed',
+                right: '20px',
+                bottom: '80px',
+                zIndex: '999999',
+                padding: '10px 14px',
+                background: '#111',
+                color: '#fff',
+                border: '1px solid #555',
+                borderRadius: '10px',
+                fontSize: '14px'
+            });
+            btn.addEventListener('click', saveLast15Seconds);
+            document.body.appendChild(btn);
+        }
 
-        const btn = document.createElement('button');
-        btn.id = 'saveReplayBtn';
-        btn.textContent = 'Save Replay';
+        if (!document.getElementById('saveReplayStatus')) {
+            statusBox = document.createElement('div');
+            statusBox.id = 'saveReplayStatus';
+            statusBox.textContent = 'Replay loading...';
+            Object.assign(statusBox.style, {
+                position: 'fixed',
+                right: '20px',
+                bottom: '130px',
+                zIndex: '999999',
+                padding: '8px 10px',
+                background: 'rgba(0,0,0,0.75)',
+                color: '#fff',
+                borderRadius: '8px',
+                fontSize: '12px',
+                maxWidth: '280px'
+            });
+            document.body.appendChild(statusBox);
+        } else {
+            statusBox = document.getElementById('saveReplayStatus');
+        }
 
-        Object.assign(btn.style, {
-            position: 'fixed',
-            right: '20px',
-            bottom: '80px',
-            zIndex: '999999',
-            padding: '10px 14px',
-            background: '#111',
-            color: '#fff',
-            border: '1px solid #555',
-            borderRadius: '10px',
-            fontSize: '14px'
-        });
-
-        btn.addEventListener('click', saveLast15Seconds);
-        document.body.appendChild(btn);
-
-        statusBox = document.createElement('div');
-        statusBox.id = 'saveReplayStatus';
-        statusBox.textContent = 'Replay loading...';
-
-        Object.assign(statusBox.style, {
-            position: 'fixed',
-            right: '20px',
-            bottom: '130px',
-            zIndex: '999999',
-            padding: '8px 10px',
-            background: 'rgba(0,0,0,0.75)',
-            color: '#fff',
-            borderRadius: '8px',
-            fontSize: '12px',
-            maxWidth: '220px'
-        });
-
-        document.body.appendChild(statusBox);
+        if (!document.getElementById('saveReplayPreview')) {
+            previewVideo = document.createElement('video');
+            previewVideo.id = 'saveReplayPreview';
+            previewVideo.autoplay = true;
+            previewVideo.muted = true;
+            previewVideo.playsInline = true;
+            Object.assign(previewVideo.style, {
+                position: 'fixed',
+                right: '20px',
+                bottom: '180px',
+                width: '220px',
+                height: '124px',
+                background: '#000',
+                border: '1px solid #666',
+                borderRadius: '8px',
+                zIndex: '999999'
+            });
+            document.body.appendChild(previewVideo);
+        } else {
+            previewVideo = document.getElementById('saveReplayPreview');
+        }
     }
 
-    function getBestCanvas() {
-        const canvases = [...document.querySelectorAll('canvas')];
+    function getAllCanvases() {
+        return [...document.querySelectorAll('canvas')];
+    }
+
+    function pickBestCanvas() {
+        const canvases = getAllCanvases();
         if (!canvases.length) return null;
 
-        canvases.sort((a, b) => {
-            const areaA = (a.width || 0) * (a.height || 0);
-            const areaB = (b.width || 0) * (b.height || 0);
-            return areaB - areaA;
+        canvases.forEach((c, i) => {
+            console.log(`[REPLAY] canvas ${i}: ${c.width}x${c.height}`, c);
         });
 
+        canvases.sort((a, b) => (b.width * b.height) - (a.width * a.height));
         return canvases[0];
     }
 
     function waitForCanvas() {
         return new Promise((resolve) => {
             const check = () => {
-                const canvas = getBestCanvas();
+                const canvas = pickBestCanvas();
                 if (canvas && canvas.width > 0 && canvas.height > 0) {
-                    return resolve(canvas);
+                    resolve(canvas);
+                    return;
                 }
                 setTimeout(check, 1000);
             };
@@ -92,64 +119,81 @@
             return;
         }
 
-        const canvas = await waitForCanvas();
-        log(`Canvas gjetur: ${canvas.width}x${canvas.height}`);
+        selectedCanvas = await waitForCanvas();
+        log(`Canvas zgjedhur: ${selectedCanvas.width}x${selectedCanvas.height}`);
 
-        if (!canvas.captureStream) {
+        if (!selectedCanvas.captureStream) {
             log('captureStream nuk mbështetet');
             return;
         }
 
-        const stream = canvas.captureStream(30);
+        const stream = selectedCanvas.captureStream(30);
+        previewVideo.srcObject = stream;
+
+        const track = stream.getVideoTracks()[0];
+        if (!track) {
+            log('Ska video track');
+            return;
+        }
+
+        console.log('[REPLAY] track settings:', track.getSettings ? track.getSettings() : 'no settings');
 
         let options = {};
-        if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
-            options.mimeType = 'video/webm;codecs=vp9';
-        } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
-            options.mimeType = 'video/webm;codecs=vp8';
+        if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
+            options = { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 4000000 };
         } else if (MediaRecorder.isTypeSupported('video/webm')) {
-            options.mimeType = 'video/webm';
+            options = { mimeType: 'video/webm', videoBitsPerSecond: 4000000 };
+        } else {
+            log('webm nuk mbështetet');
+            return;
         }
 
         try {
             recorder = new MediaRecorder(stream, options);
         } catch (err) {
-            log('MediaRecorder error: ' + err.message);
+            log('MediaRecorder failed: ' + err.message);
+            console.error(err);
             return;
         }
 
         recorder.ondataavailable = (event) => {
-            if (event.data && event.data.size > 0) {
+            const size = event.data ? event.data.size : 0;
+            console.log('[REPLAY] chunk size:', size);
+
+            if (size > 0) {
                 chunks.push(event.data);
-                while (chunks.length > MAX_CHUNKS) {
-                    chunks.shift();
-                }
-                isReady = true;
-                log(`Recording... chunks: ${chunks.length}/${MAX_CHUNKS}`);
+                while (chunks.length > MAX_CHUNKS) chunks.shift();
+                log(`Recording OK: ${chunks.length}/${MAX_CHUNKS} | ${size} bytes`);
+            } else {
+                log('Chunk bosh');
             }
         };
 
         recorder.onerror = (e) => {
+            console.error('[REPLAY] recorder error', e);
             log('Recorder error');
-            console.error(e);
         };
 
-        try {
-            recorder.start(CHUNK_MS);
-            log('Replay buffer u nis');
-        } catch (err) {
-            log('Start failed: ' + err.message);
-        }
+        recorder.start(CHUNK_MS);
+        log('Replay buffer u nis');
     }
 
     function saveLast15Seconds() {
-        if (!isReady || !chunks.length) {
-            log('Ska replay akoma');
+        if (!chunks.length) {
+            log('Nuk ka chunks');
+            return;
+        }
+
+        const totalSize = chunks.reduce((sum, b) => sum + b.size, 0);
+        log(`Saving ${totalSize} bytes`);
+
+        if (totalSize <= 0) {
+            log('Chunks janë bosh');
             return;
         }
 
         const blob = new Blob(chunks, {
-            type: (recorder && recorder.mimeType) || 'video/webm'
+            type: recorder?.mimeType || 'video/webm'
         });
 
         const url = URL.createObjectURL(blob);
@@ -159,8 +203,8 @@
         document.body.appendChild(a);
         a.click();
         a.remove();
-
         setTimeout(() => URL.revokeObjectURL(url), 5000);
+
         log('Replay u ruajt');
     }
 
@@ -171,6 +215,6 @@
     });
 
     window.addEventListener('load', () => {
-        setTimeout(startReplayBuffer, 2000);
+        setTimeout(startReplayBuffer, 2500);
     });
 })();
